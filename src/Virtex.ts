@@ -1,4 +1,4 @@
-declare var Detector: any;
+declare var WEBGL: any;
 
 namespace Virtex {
     export class Viewport {
@@ -8,7 +8,7 @@ namespace Virtex {
         private _isFullscreen: boolean = false;
         private _isMouseDown: boolean = false;
         private _isMouseOver: boolean = false;
-        private _lightGroup: THREE.Group;
+        private _lightGroup: THREE.Group | THREE.Object3D;
         private _loading: HTMLElement;
         private _loadingBar: HTMLElement;
         private _loadingBarProgress: HTMLElement;
@@ -32,7 +32,7 @@ namespace Virtex {
         private _vrDisplay: any;
 
         public camera: THREE.PerspectiveCamera;
-        public objectGroup: THREE.Group;
+        public objectGroup: THREE.Group | THREE.Object3D;
         public options: IVirtexOptions;
         public renderer: THREE.WebGLRenderer;
         public scene: THREE.Scene;
@@ -57,10 +57,8 @@ namespace Virtex {
 
             this._element.innerHTML = '';
             
-            if (!Detector.webgl) {
-                Detector.addGetWebGLMessage();
-                this._oldie = <HTMLElement>document.querySelector('#oldie');
-                this._element.appendChild(this._oldie);
+            if (!WEBGL.isWebGLAvailable()) {
+                this._element.appendChild(WEBGL.getWebGLErrorMessage());
                 return;
             }
 
@@ -137,7 +135,8 @@ namespace Virtex {
                 showStats: false,
                 type: FileType.OBJ,
                 backgroundColor: 0x000000,
-                zoomSpeed: 1
+                zoomSpeed: 1,
+                dracoDecoderPath: './'
             }
         }
 
@@ -163,7 +162,7 @@ namespace Virtex {
         public createLights(): void {
             
             // remove any existing lights
-            const existingLights: THREE.Object3D | null = this.scene.getObjectByName('lights');
+            const existingLights: THREE.Object3D | null | undefined = this.scene.getObjectByName('lights');
 
             if (existingLights) {
                 this.scene.remove(existingLights);
@@ -325,6 +324,10 @@ namespace Virtex {
                         break;
                     case FileType.GLTF.toString() :
                         loader = new (<any>THREE).GLTFLoader();
+                        let dracoDecoderPath = <string>this.options.data.dracoDecoderPath;
+                        (<any>THREE).DRACOLoader.setDecoderPath(dracoDecoderPath);
+                        let dracoLoader = new (<any>THREE).DRACOLoader();
+                        loader.setDRACOLoader(dracoLoader);
                         break;
                     case FileType.OBJ.toString() :
                         loader = new THREE.OBJLoader();

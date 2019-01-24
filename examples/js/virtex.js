@@ -286,10 +286,8 @@ var Virtex;
                 return;
             }
             this._element.innerHTML = '';
-            if (!Detector.webgl) {
-                Detector.addGetWebGLMessage();
-                this._oldie = document.querySelector('#oldie');
-                this._element.appendChild(this._oldie);
+            if (!WEBGL.isWebGLAvailable()) {
+                this._element.appendChild(WEBGL.getWebGLErrorMessage());
                 return;
             }
             this._viewport = document.createElement('div');
@@ -355,7 +353,8 @@ var Virtex;
                 showStats: false,
                 type: Virtex.FileType.OBJ,
                 backgroundColor: 0x000000,
-                zoomSpeed: 1
+                zoomSpeed: 1,
+                dracoDecoderPath: './'
             };
         };
         Viewport.prototype._animate = function () {
@@ -502,6 +501,10 @@ var Virtex;
                         break;
                     case Virtex.FileType.GLTF.toString():
                         loader = new THREE.GLTFLoader();
+                        var dracoDecoderPath = _this.options.data.dracoDecoderPath;
+                        THREE.DRACOLoader.setDecoderPath(dracoDecoderPath);
+                        var dracoLoader = new THREE.DRACOLoader();
+                        loader.setDRACOLoader(dracoLoader);
                         break;
                     case Virtex.FileType.OBJ.toString():
                         loader = new THREE.OBJLoader();
