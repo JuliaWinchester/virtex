@@ -59,7 +59,7 @@ declare namespace Virtex {
         type?: FileType;
         backgroundColor?: number;
         zoomSpeed?: number;
-        dracoDecoderPath: string;
+        dracoDecoderPath?: string;
     }
     interface IVirtexOptions {
         target: HTMLElement;
